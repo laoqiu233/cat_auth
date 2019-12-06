@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="/static/normalize.css"/>
+    <link rel="stylesheet" href="/static/ds.css"/>
+    <title>Login | Cat-auth</title>
+</head>
+<body>
+    <div class="container u-full-vh">
+        <div class="row">
+            <div class="col-5 u-drop-shadow">
+                <h1 class="c-purple">Cat-auth</h1>
+                <form action="/auth/api/login" method=POST>
+                    <label for="Username" class="on-top">Username:</label>
+                    <input type="text" name="Username" id="username">
+                    <label for="Password" class="on-top">Password:</label>
+                    <input type="password" name="Password" id="password">
+                    <input type="hidden" id="callback" name="callback" value="{{ callback }}">
+                    <br>
+                    <a href="/auth/register?callback={{ callback }}">Register instead</a>
+                    <p id="warning-message" class="c-red"></p>
+                    <br>
+                    <input type="submit" value="Sign-in" class="c-purple" id="submit">
+                </form>
+            </div>
+            <div class="col-7 c-purple-bg c-white">
+                <h1>The least secure authorization system🐈</h1>
+                <h2>But it looks cool tho</h2>
+            </div>
+        </div>
+    </div>
+    <script>
+        function inputWarning(input) {
+            input.classList.add("c-red");
+            input.onfocus = function() {
+                this.classList.remove("c-red")
+            }
+        }
+
+        let username_input = document.getElementById("username");
+        let password_input = document.getElementById("password");
+
+        document.getElementById("submit").onclick = function(event) {
+            event.preventDefault();
+
+            let form = new FormData;
+            form.append('Username', username_input.value);
+            form.append('Password', password_input.value);
+            form.append('callback', document.getElementById("callback").value);
+
+            fetch("/auth/api/login", {
+                method: "POST",
+                redirect: "follow",
+                body: form
+            }).then(resp => {
+                if (resp.status == 401) {
+                    inputWarning(username_input);
+                    inputWarning(password_input);
+                    document.getElementById("warning-message").innerHTML = "Incorrect username or password!";
+                } else if (resp.redirected) {
+                    window.location.href = resp.url;
+                } else {
+                    document.getElementById("warning-message").innerHTML = "Something went wrong, try again later";
+                }
+            });
+        }
+    </script>
+</body>
+</html>

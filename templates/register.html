@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="/static/normalize.css"/>
+    <link rel="stylesheet" href="/static/ds.css"/>
+    <title>Sing-up | Cat-auth</title>
+</head>
+<body>
+    <div class="container u-full-vh">
+        <div class="row">
+            <div class="col-5 u-drop-shadow">
+                <h1 class="c-purple">Cat-auth</h1>
+                <form action="/auth/api/register" method=POST>
+                    <label for="Username" class="on-top">Username:</label>
+                    <input type="text" name="Username" id="username">
+                    <label for="Username" class="c-red" id="username-warning"></label>
+                    <label for="Password" class="on-top">Password:</label>
+                    <input type="password" name="Password" id="password">
+                    <label for="Password" class="c-red" id="password-warning"></label>
+                    <input type="hidden" id="callback" name="callback" value="{{ callback }}">
+                    <br>
+                    <a href="/auth/login?callback={{ callback }}">Login instead</a>
+                    <p class="c-red" id="warning-message"></p>
+                    <br>
+                    <input type="submit" value="Sign-up" class="c-purple" id="submit">
+                </form>
+            </div>
+            <div class="col-7 c-purple-bg c-white">
+                <h1>The least secure authorization system🐈</h1>
+                <h2>But it looks cool tho</h2>
+            </div>
+        </div>
+    </div>
+    <script>
+        function inputWarning(input) {
+            input.classList.add("c-red");
+            input.onfocus = function() {
+                this.classList.remove("c-red")
+            }
+        }
+        
+        valid_chars = /[a-zA-Z0-9_\-]/g;
+
+        username_input = document.getElementById("username");
+        password_input = document.getElementById("password");
+        document.getElementById("username-warning").innerHTML = "";
+        document.getElementById("password-warning").innerHTML = "";
+
+        document.getElementById("submit").onclick = function(event) {
+            event.preventDefault();
+            let all_valid = true;
+            if (username_input.value.length < 4 || username_input.value.length > 120) {
+                all_valid = false;
+                inputWarning(username_input);
+                document.getElementById("username-warning").innerHTML = "Should be longer than 4 characters"
+            }
+            if (username_input.value.replace(valid_chars, "").length > 0) {
+                all_valid = false;
+                console.log(username_input.value.replace(valid_chars, ""))
+                inputWarning(username_input);
+                document.getElementById("username-warning").innerHTML = "Contains invalid characters";
+            }
+
+            if (password_input.value.length < 8) {
+                all_valid = false;
+                inputWarning(password_input);
+                document.getElementById("password-warning").innerHTML = "Should 8 characters or more"
+            }
+            if (password_input.value.replace(valid_chars, ""). length > 0) {
+                all_valid = false;
+                inputWarning(password_input);
+                document.getElementById("password-warning").innerHTML = "Contains invalid characters"
+            }
+
+            if (!all_valid) {return}
+
+            let form = new FormData;
+            form.append("Username", username_input.value);
+            form.append("Password", password_input.value);
+            form.append("callback", document.getElementById("callback").value);
+
+            fetch("/auth/api/register", {
+                method: "POST",
+                redirect: "follow",
+                body: form
+            }).then(resp => {
+                if (resp.status == 400) {
+                    inputWarning(username_input);
+                    document.getElementById("username-warning").innerHTML = "This user name is already taken"
+                } else if (resp.redirected) {
+                    window.location.href = resp.url;
+                } else {
+                    document.getElementById("warning-message").innerHTML = "Something went wrong, try again later"
+                }
+            });
+        }
+    </script>
+</body>
+</html>
