@@ -3,5 +3,5 @@ Flask-SQLAlchemy==2.4.1
 gunicorn==19.9.0
 mysql-connector-python==8.0.17
 passlib==1.7.2
-PyJWT==1.7.1
+PyJWT==2.4.0
 #PyMySQL==0.9.3
